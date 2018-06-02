@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <termio.h>
-int getch(void) { //getchÇÔ¼ö Á¤ÀÇ 
+int getch(void) { //getchí•¨ìˆ˜ ì •ì˜ 
 	int ch;
 	struct termios buf;
 	struct termios save;
@@ -25,16 +25,16 @@ int main(void) {
 		char c;
 		printf("**********************************************\n");
 		printf("*                                            *\n");
-		printf("*  1. ÀÚ¸®¿¬½À                  2. ³¹¸»¿¬½À  *\n");
-		printf("*  3. ¹®Àå¿¬½À                  3. ±ä±Û¿¬½À  *\n");
-		printf("*  5. ÇÁ·Î±×·¥ Á¾·á                          *\n");
+		printf("*  1. ìë¦¬ì—°ìŠµ                  2. ë‚±ë§ì—°ìŠµ  *\n");
+		printf("*  3. ë¬¸ì¥ì—°ìŠµ                  3. ê¸´ê¸€ì—°ìŠµ  *\n");
+		printf("*  5. í”„ë¡œê·¸ë¨ ì¢…ë£Œ                          *\n");
 		printf("*                                            *\n");
 		printf("**********************************************\n");
 		c=getch(); 
 		system("clear");
 		switch (c) {
 			case '1' :
-				break;
+				break; 
 			case '2' :
 				break;
 			case '3' :
