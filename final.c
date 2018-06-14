@@ -140,8 +140,6 @@ void screed(void) {
 	}
 	if(q==0)
 		break;
-	/*wrg=0;
-	typ=0;*/
 	for(int i=5; i<9; i++) {					//입력 받는 반복문
 		int j;
 		idx=0;
@@ -252,7 +250,7 @@ int word(){           // 단어 연습
 		N=i;									//단어 길이 구하기 끝
 
 		//시작
-		printf(">> 영문 타자 연습 프로그램:짧은 글 연습<<\n");
+		printf(">> 영문 타자 연습 프로그램:낱말 연습<<\n");
 		if(progress==0){						//progress가 0이면 나눌 수 없기 떄문,진행도,오타수,정확도 출력
 			printf("진행도: %d%% 	오타수 : %d 	정확도: %.0f%%\n",progress*5,fault_num,(float)accurate*100);
 		}
