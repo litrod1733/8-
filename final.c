@@ -4,7 +4,8 @@
 #include<stdlib.h>
 #include<time.h>
 #include<termio.h>
-int choice, result_tpm, result_acr;			//예문 랜덤 선택 변수, 분당 타수 저장 변수, 정확도 저장 변수
+int choice, result_acr, correct;			//예문 랜덤 선택 변수, 분당 타수 저장 변수, 정확도 저장 변수
+double result_tpm = 0;
 int wrg=0;						//오타 수 변수
 int idx=0; 					   	//책갈피
 int typ=0;   					//실제 친 타수 변수
@@ -24,30 +25,35 @@ int getch(){
 	tcsetattr(0,TCSAFLUSH,&save);
 	return ch;
 }
+void reset_input()
+{
+	for(int i = 0; i < 10; i++)
+		for(int j = 0; j < 100; j++)
+			input[i][j] = '\0';
+}
+int accuracy(int n, int m) {		//정확도 계산 함수
+	correct = 0;
 
-int accuracy(int n, int m, int wrg_tmp, int typ_tmp) {		//정확도 계산 함수
-	wrg=0;
-	double result=0;
-	for(int i=0; i<n; i++) {
-		if(strlen(example[choice][i])>strlen(input[i])) {
-			wrg_tmp += strlen(example[choice][i])-strlen(input[i]);
-			typ_tmp += strlen(example[choice][i])-strlen(input[i]);
+	for(int i = 0; i < n; i++)
+	{
+		for(int j = 0; j < strlen(example[choice][i]); j++)
+		{
+			if(example[choice][i][j] == input[i][j])
+				correct++;
 		}
-		for(int j=0; j<strlen(input[i]); j++)
-			if(example[choice][i][j]!=input[i][j])
-				wrg_tmp++;
 	}
-	for(int i=0; i<strlen(input[n]); i++)
-		if(example[choice][n][i]!=input[n][i])
-			wrg_tmp++;
-	result=100-(double)wrg_tmp*100/typ_tmp;
-	if(n==0 && m==0)
-		result=0;
-	return result;
+	for(int i = 0; i < m; i++)
+		if(example[choice][n][i] == input[n][i])
+			correct++;
+	if(typ == 0)
+		return 0;
+	else	
+		return (100*correct/typ);
+
 }
 
 double TPM(int n, time_t start, time_t end) {	//분당 타수(Typing Per Minute) 계산 함수
-	double type = n*60/(end-start);
+	double type = (n*60)/(end-start);
 	return type;
 }
 
@@ -57,11 +63,22 @@ void print_example(int n, int m) {	//예문 출력함수, n=choice, m=출력할 
 	return ;
 }
 
-void print_input(int n, int m) {	//현재까지 친 타자 출력 함수, n=n번째 문장, m=인덱스 변수
+void print_input(int n, int m, int a) {	//현재까지 친 타자 출력 함수, n=n번째 문장, m=인덱스 변수
+	
+	if(a==1)
+	{
 	for(int i=0; i<n; i++)
 		printf("%s\n", input[i]);
 	for(int i=0; i<m; i++)
 		printf("%c", input[n][i]);
+}
+	else
+	{
+		for(int i = 5; i < n; i++)
+			printf("%s\n", input[i]);
+		for(int i = 0; i < m; i++)
+			printf("%c", input[n][i]);
+	}
 	return ;
 }
 
@@ -89,99 +106,104 @@ void screed(void) {
 	printf("**********************************************\n");
 	sleep(3);
 	system("clear");
-	for(int i=0; i<5; i++)
-		for(int j=0; j<100; j++)
-			input[i][j]='\0';
-	typ=0;
+	typ = idx = 0;
 	int q=1;
 	
 	time_t start, end;
-
-	while(q) {
+	reset_input();
 	start = time(NULL);
-	for(int i=0; i<5; i++) {					//입력 받는 반복문
-		int j;
-		idx=0;
-
-		for(j=0; j<strlen(example[choice][i]); j++) {
+	for(int i=0; i<5; i++)
+	{					//입력 받는 반복문
+		for(int j=0; j < strlen(example[choice][i])+1; j++) 
+		{	 //result_acr 정확도, result_tpm 타수
 			system("clear");
-			result_acr=accuracy(i,j,wrg,typ);			//현재커서까지의 정확도 계산
+			result_acr=accuracy(i,j);			//현재커서까지의 정확도 계산
+			result_tpm = TPM(correct, start, end);		//변경사항2 (타수 문제 수정)
+
 			printf("=======================================\n");
-			printf("   현재 타수 : %d 타,  정확도 : %d %   \n", result_tpm, result_acr);
+			printf("   현재 타수 : %.0lf 타,  정확도 : %d %   \n", result_tpm, result_acr);
 			printf("=======================================\n");
 			print_example(choice, 0);
 			printf("\n\n");
-			print_input(i,idx);
+			print_input(i,j, 1);
 			input[i][j]=getch();
-			idx++;
-			typ++;
-			if(input[i][j]==27)					//강제종료 구현
-				break;
-			else if(input[i][j]==127) {			//백스페이스
-				idx-=2;
-				j-=2;
-				typ-=2;
+			end = time(NULL);
+			if(input[i][j]==27)
+			{
+				printf("\n [ESC]가 입력되었습니다. 잠시 후 메뉴로 돌아갑니다.\n");
+				sleep(1);
+				return;
 			}
-			else if(input[i][j]==10) {			//개행문자
-				idx--;
-				typ--;
+			else if(input[i][j]==127 && j > 0)
+			{
 				input[i][j] = '\0';
-				break;
-			} 
-			else { //일반 타자
-				end = time(NULL); 
-				result_tpm = TPM(typ-wrg, start, end);
+				input[i][j-1] = '\0';
+				j-=2;
+				typ--;
 			}
-		}
-		if(input[i][j]==27)	{					//강제종료 구현
-			q=0;
-			break;
+			else if(input[i][j]==127 && j == 0)
+			{ 
+					input[i][j]= '\0';
+					j--;
+			}
+			else if(input[i][j]==10)
+			{
+				input[i][j]='\0';
+				typ += (strlen(example[choice][i]) - strlen(input[i]));
+				break;
+			}
+			else
+				typ++;
 		}
 	}
-	if(q==0)
-		break;
-	for(int i=5; i<9; i++) {					//입력 받는 반복문
-		int j;
-		idx=0;
 
-		for(j=0; j<strlen(example[choice][i]); j++) {
+	for(int i=5; i<9; i++) {					//입력 받는 반복문
+		for(int j=0; j < strlen(example[choice][i])+1; j++) 
+		{	 //result_acr 정확도, result_tpm 타수
 			system("clear");
-			result_acr=accuracy(i,j,wrg,typ);			//현재커서까지의 정확도 계산
+			result_acr=accuracy(i,j);			//현재커서까지의 정확도 계산
+			result_tpm = TPM(correct, start, end);		//변경사항2 (타수 문제 수정)
+
 			printf("=======================================\n");
-			printf("   현재 타수 : %d 타,  정확도 : %d %   \n", result_tpm, result_acr);
+			printf("   현재 타수 : %.0lf 타,  정확도 : %d %   \n", result_tpm, result_acr);
 			printf("=======================================\n");
 			print_example(choice, 5);
 			printf("\n\n");
-			print_input(i-5,idx);
-			input[i-5][j]=getch();
-			idx++;
-			typ++;
-			if(input[i-5][j]==27)					//강제종료 구현
-				break;
-			else if(input[i-5][j]==127) {			//백스페이스
-				idx-=2;
+			print_input(i,j , 0);
+			input[i][j]=getch();
+			end = time(NULL);
+			if(input[i][j]==27)
+			{
+				printf("\n [ESC]가 입력되었습니다. 잠시 후 메뉴로 돌아갑니다.\n");
+				sleep(1);
+				return;
+			}
+			else if(input[i][j]==127 && j > 0)
+			{
+				input[i][j] = '\0';
+				input[i][j-1] = '\0';
 				j-=2;
-				typ-=2;
-			}
-			else if(input[i-5][j]==10) {			//개행문자
-				idx--;
 				typ--;
-				input[i-5][j] = '\0';
+			}
+			else if(input[i][j]==127 && j == 0)
+			{ 
+					input[i][j]= '\0';
+					j--;
+			}
+			else if(input[i][j]==10)
+			{
+				input[i][j]='\0';
+				typ += (strlen(example[choice][i]) - strlen(input[i]));
 				break;
 			}
-			else { 								//일반 타자
-				end = time(NULL);
-				result_tpm = TPM(typ-wrg, start, end);
-			}
+			else
+				typ++;
 		}
-		if(input[i-5][j]==27)						//강제종료 구현
-			break;
 	}
-	q=0;
-	}
-	return ;
+	printf("\n긴 글 연습이 끝났습니다. 잠시 후 메뉴로 돌아갑니다.\n");
+	sleep(3);
+	return;
 }
-int main();
 int alp(){             //자리연습
 	char answer;      //입력받을 변수
 	int progress=0, fault=0, accurate=0, answer_count=0; //진행도,오타수,정확도,입력한 개수를 위한 변수선언
@@ -218,11 +240,11 @@ int alp(){             //자리연습
 			else{	 
 				fault++;//제시한 알파벳과 입력해준 알파벳이 다르면 오류변수를 증가시켜줌
 				if(answer==27)//esc를 누르면 메인으로 돌아감
-				main();
+					return 0;
 			}  
 		}
 	}
-	printf(">>영문타자 연습 프로그램: 자리 연습<<\n");
+	printf(">>영문타자 연습 프로그램 : 자리 연습<<\n");
 	printf("진행도:%d%%, 오타수:%d, 정확도:%.0f%%\n",progress*5,fault,(float)accurate*100/answer_count);
 	return 0;
 }
@@ -250,7 +272,7 @@ int word(){           // 단어 연습
 		N=i;									//단어 길이 구하기 끝
 
 		//시작
-		printf(">> 영문 타자 연습 프로그램:낱말 연습<<\n");
+		printf(">> 영문 타자 연습 프로그램 : 낱말 연습<<\n");
 		if(progress==0){						//progress가 0이면 나눌 수 없기 떄문,진행도,오타수,정확도 출력
 			printf("진행도: %d%% 	오타수 : %d 	정확도: %.0f%%\n",progress*5,fault_num,(float)accurate*100);
 		}
@@ -300,7 +322,7 @@ int word(){           // 단어 연습
 	while(1){									//메뉴로 넘어가기 위해 enter를 입력받음
 		enter=getch();
 		if(enter=='\n'){
-			main();
+			return 0;
 		}
 	}
 	return 0;									//끝나고 enter입력할때까지 대기하도록 만들어야함
