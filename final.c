@@ -118,7 +118,7 @@ void screed(void) {
 		{	 //result_acr 정확도, result_tpm 타수
 			system("clear");
 			result_acr=accuracy(i,j);			//현재커서까지의 정확도 계산
-			result_tpm = TPM(correct, start, end);		//변경사항2 (타수 문제 수정)
+			result_tpm = TPM(correct, start, end);
 
 			printf("=======================================\n");
 			printf("   현재 타수 : %.0lf 타,  정확도 : %d %   \n", result_tpm, result_acr);
@@ -128,31 +128,31 @@ void screed(void) {
 			print_input(i,j, 1);
 			input[i][j]=getch();
 			end = time(NULL);
-			if(input[i][j]==27)
+			if(input[i][j]==27)							//강제종료 명령 구현
 			{
 				printf("\n [ESC]가 입력되었습니다. 잠시 후 메뉴로 돌아갑니다.\n");
 				sleep(1);
 				return;
 			}
-			else if(input[i][j]==127 && j > 0)
+			else if(input[i][j]==127 && j > 0)			//백 스페이스 조건 구현
 			{
 				input[i][j] = '\0';
 				input[i][j-1] = '\0';
 				j-=2;
 				typ--;
 			}
-			else if(input[i][j]==127 && j == 0)
+			else if(input[i][j]==127 && j == 0)			//문장의 첫머리에 커서가 있을 때 백 스페이스 조건 구현
 			{ 
 					input[i][j]= '\0';
 					j--;
 			}
-			else if(input[i][j]==10)
+			else if(input[i][j]==10)					//개행 조건 구현
 			{
 				input[i][j]='\0';
 				typ += (strlen(example[choice][i]) - strlen(input[i]));
 				break;
 			}
-			else
+			else										//그 외 타자
 				typ++;
 		}
 	}
@@ -162,7 +162,7 @@ void screed(void) {
 		{	 //result_acr 정확도, result_tpm 타수
 			system("clear");
 			result_acr=accuracy(i,j);			//현재커서까지의 정확도 계산
-			result_tpm = TPM(correct, start, end);		//변경사항2 (타수 문제 수정)
+			result_tpm = TPM(correct, start, end);
 
 			printf("=======================================\n");
 			printf("   현재 타수 : %.0lf 타,  정확도 : %d %   \n", result_tpm, result_acr);
@@ -172,36 +172,64 @@ void screed(void) {
 			print_input(i,j , 0);
 			input[i][j]=getch();
 			end = time(NULL);
-			if(input[i][j]==27)
+			if(input[i][j]==27)							//강제종료 명령 구현
 			{
 				printf("\n [ESC]가 입력되었습니다. 잠시 후 메뉴로 돌아갑니다.\n");
 				sleep(1);
 				return;
 			}
-			else if(input[i][j]==127 && j > 0)
+			else if(input[i][j]==127 && j > 0)			//백 스페이스 조건 구현
 			{
 				input[i][j] = '\0';
 				input[i][j-1] = '\0';
 				j-=2;
 				typ--;
 			}
-			else if(input[i][j]==127 && j == 0)
+			else if(input[i][j]==127 && j == 0)			//문장의 첫머리에 커서가 있을 때 백 스페이스 조건 구현
 			{ 
 					input[i][j]= '\0';
 					j--;
 			}
-			else if(input[i][j]==10)
+			else if(input[i][j]==10)					//개행 조건 구현
 			{
 				input[i][j]='\0';
 				typ += (strlen(example[choice][i]) - strlen(input[i]));
 				break;
 			}
-			else
+			else										//그 외 타자
 				typ++;
 		}
 	}
-	printf("\n긴 글 연습이 끝났습니다. 잠시 후 메뉴로 돌아갑니다.\n");
-	sleep(3);
+	system("clear");
+	printf("**************************************\n");
+	printf("*                                    *\n");
+	printf("*     긴 글 연습이 종료되었습니다.   *\n");
+	printf("*                                    *\n");
+	printf("**************************************\n");
+	sleep(2);
+	char c;
+	while(1) {
+		system("clear");
+		printf("*************************************************************\n");
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*                  << 긴 글 연습 결과 >>                    *\n");
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*        분 당 타수 : %.01f 타          정확도 : %d %%          *\n", result_tpm, result_acr);
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*                                                           *\n");
+		printf("*           ( 메뉴로 나가시겠습니까? [ y / n ] )            *\n");
+		printf("*                                                           *\n");
+		printf("*************************************************************\n");
+		c=getch();
+		if(c=='y')
+			break;
+	}
 	return;
 }
 int alp(){             //자리연습
